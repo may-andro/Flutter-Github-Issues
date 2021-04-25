@@ -56,6 +56,10 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build appbundle
+      - uses: ncipollo/release-action@v1
+          with:
+            artifacts: "build/app/outputs/bundle/debug/*.aab"
+            token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
 
   build_apk:
     name: Build Flutter (Android apk)
@@ -73,10 +77,6 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build apk --debug --split-per-abi
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/app/outputs/apk/debug/*.apk"
-          token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
       name: "Upload to Firebase App Distribution"
       - uses: wzieba/Firebase-Distribution-Github-Action@v1.2.1
         with:
