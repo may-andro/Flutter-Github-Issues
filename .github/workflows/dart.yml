@@ -50,8 +50,9 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@master
         with:
-          name: apk-build
-          path: build/app/outputs/apk/release
+          name: android
+          path: build/app/outputs/apk/release/app-release.apk
+
 
 
   beta_apk:
@@ -66,12 +67,12 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@master
         with:
-          name: apk-build
+          name: android
       - name: Upload App Bundle
         uses: wzieba/Firebase-Distribution-Github-Action@v1.3.2
         with:
           appId: ${{secrets.FIREBASE_APP_ID}}
           token: ${{secrets.FIREBASE_TOKEN}}
-          group: testers
-          file: app-release.aap
+          group: Tester
+          file: app-release.apk
 
