@@ -58,9 +58,10 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build appbundle
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v2
         with:
-          artifacts: "build/app/outputs/bundle/debug/*.aab"
+          name: APPBUNDLE
+          path: build/app/outputs/bundle/debug/app-debug.aab
 
   build_apk:
     name: Build Flutter (Android apk)
@@ -104,5 +105,5 @@ jobs:
           appId: ${{secrets.FIREBASE_APP_ID}}
           token: ${{secrets.FIREBASE_TOKEN}}
           groups: Tester
-          file: "build/app/outputs/apk/debug/*.apk"
+          file: build/app/outputs/bundle/debug/app-debug.apk
 
