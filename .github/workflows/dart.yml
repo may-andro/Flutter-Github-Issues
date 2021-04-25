@@ -44,10 +44,6 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build apk
-      - name: Download Artifact
-        uses: actions/download-artifact@master
-        with:
-          name: apk-build
       - name: Upload APK
         uses: wzieba/Firebase-Distribution-Github-Action@v1.0.0
         with:
