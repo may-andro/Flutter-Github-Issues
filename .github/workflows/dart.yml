@@ -77,11 +77,6 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build apk
-      - name: Upload APK
-        uses: actions/upload-artifact@master
-          with:
-            name: "*"
-            path: build/app/outputs/apk/debug
 
   deploy_apk:
     name: Deploy Flutter (Android apk)
