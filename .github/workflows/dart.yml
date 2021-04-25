@@ -63,10 +63,9 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build appbundle
-      - name: Upload APK
-        uses: actions/upload-artifact@master
-          with:
-            artifacts: "build/app/outputs/bundle/debug/*.aab"
+      - uses: actions/upload-artifact@master
+        with:
+          artifacts: "build/app/outputs/bundle/debug/*.aab"
 
   build_apk:
     name: Build Flutter (Android apk)
