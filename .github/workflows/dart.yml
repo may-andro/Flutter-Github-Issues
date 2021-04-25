@@ -6,8 +6,11 @@ name: CI
 
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   flutter_test:
@@ -27,6 +30,7 @@ jobs:
 
   beta_apk:
     name: Build Flutter (Android Beta apk)
+    needs: [flutter_test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
