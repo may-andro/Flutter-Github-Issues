@@ -76,13 +76,9 @@ jobs:
           flutter-version: '2.0.5'
       - run: flutter pub get
       - run: flutter clean
-      - run: flutter build apk
-      name: "Upload to Firebase App Distribution"
-        - uses: wzieba/Firebase-Distribution-Github-Action@v1.2.1
-          with:
-            appId: ${{secrets.FIREBASE_APP_ID}}
-            token: ${{secrets.FIREBASE_TOKEN}}
-            groups: Tester
-            file: "build/app/outputs/apk/debug/*.apk"
-
+      - run: flutter build apk --debug --split-per-abi
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/app/outputs/apk/debug/*.apk"
+          token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
 
