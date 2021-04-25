@@ -61,7 +61,7 @@ jobs:
         with:
           java-version: "12.x"
       - name: Download Artifact
-          uses: actions/download-artifact@master
+        uses: actions/download-artifact@master
           with:
             name: debug
       - name: Upload App Bundle
