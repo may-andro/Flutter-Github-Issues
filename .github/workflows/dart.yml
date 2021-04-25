@@ -75,8 +75,16 @@ jobs:
       - run: flutter build apk --debug --split-per-abi
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: build/app/outputs/apk/release/*.apk
+          artifacts: "build/app/outputs/apk/debug/*.apk"
           token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
+      name: "Upload to Firebase App Distribution"
+      - uses: wzieba/Firebase-Distribution-Github-Action@v1.2.1
+        with:
+          appId: ${{secrets.FIREBASE_APP_ID}}
+          token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
+          groups: Debug
+          file: "build/app/outputs/apk/debug/*.apk"
+
 
 
 
