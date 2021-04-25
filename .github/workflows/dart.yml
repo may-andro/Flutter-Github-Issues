@@ -76,7 +76,7 @@ jobs:
           flutter-version: '2.0.5'
       - run: flutter pub get
       - run: flutter clean
-      - run: flutter build apk --debug --split-per-abi
+      - run: flutter build apk
       name: "Upload to Firebase App Distribution"
       - uses: wzieba/Firebase-Distribution-Github-Action@v1.2.1
         with:
