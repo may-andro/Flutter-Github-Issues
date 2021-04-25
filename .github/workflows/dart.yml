@@ -29,7 +29,7 @@ jobs:
       - run: flutter analyze
 
   build_apk:
-    name: Build Flutter (Android)
+    name: Build Android APK
     needs: [flutter_test]
     runs-on: ubuntu-latest
     steps:
@@ -45,18 +45,14 @@ jobs:
       - run: flutter clean
       - name: Build APK
         run: flutter build apk --release
-      - name: Build APPBUNDLE
-        run: flutter build appbundle --release
       - name: Upload APK
         uses: actions/upload-artifact@master
         with:
-          name: android
+          name: apk
           path: build/app/outputs/apk/release/app-release.apk
 
-
-
   beta_apk:
-    name: Build Flutter (Android Beta apk)
+    name: Build Android Beta APK
     needs: [build_apk]
     runs-on: ubuntu-latest
     steps:
@@ -64,15 +60,58 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: "12.x"
-      - name: Download Artifact
+      - name: Download APK Artifact
         uses: actions/download-artifact@master
         with:
-          name: android
-      - name: Upload App Bundle
+          name: apk
+      - name: Upload APK to Firebase
         uses: wzieba/Firebase-Distribution-Github-Action@v1.3.2
         with:
           appId: ${{secrets.FIREBASE_APP_ID}}
           token: ${{secrets.FIREBASE_TOKEN}}
-          group: Tester
+          groups: Tester
           file: app-release.apk
 
+  build_appbundle:
+    name: Build Android APP BUNDLE
+    needs: [flutter_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '12.x'
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+          flutter-version: '2.0.5'
+      - run: flutter pub get
+      - run: flutter clean
+      - name: Build APPBUNDLE
+        run: flutter build appbundle --release
+      - name: Upload App Bundle
+        uses: actions/upload-artifact@master
+        with:
+          name: appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
+
+  beta_appbundle:
+    name: Build Android Beta APP BUNDLE
+    needs: [build_apk]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+      - name: Download APK Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: apk
+      - name: Upload APK to Firebase
+        uses: wzieba/Firebase-Distribution-Github-Action@v1.3.2
+        with:
+          appId: ${{secrets.FIREBASE_APP_ID}}
+          token: ${{secrets.FIREBASE_TOKEN}}
+          groups: Tester
+          file: app-release.apk
