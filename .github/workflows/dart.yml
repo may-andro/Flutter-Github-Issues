@@ -57,9 +57,9 @@ jobs:
       - run: flutter clean
       - run: flutter build appbundle
       - uses: ncipollo/release-action@v1
-          with:
-            artifacts: "build/app/outputs/bundle/debug/*.aab"
-            token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
+        with:
+          artifacts: "build/app/outputs/bundle/debug/*.aab"
+          token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
 
   build_apk:
     name: Build Flutter (Android apk)
