@@ -97,7 +97,7 @@ jobs:
 
   beta_appbundle:
     name: Build Android Beta APP BUNDLE
-    needs: [build_apk]
+    needs: [build_appbundle]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
