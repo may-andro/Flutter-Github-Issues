@@ -41,6 +41,11 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build ios --release --no-codesign
+      - name: Upload iPA
+        uses: actions/upload-artifact@master
+          with:
+            name: ios-build
+            path: build/ios/iphoneos
 
   build_appbundle:
     name: Build Flutter (Android App Bundle)
@@ -58,10 +63,10 @@ jobs:
       - run: flutter pub get
       - run: flutter clean
       - run: flutter build appbundle
-      - uses: ncipollo/release-action@v2
-        with:
-          artifacts: "build/app/outputs/bundle/debug/*.aab"
-          token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
+      - name: Upload APK
+        uses: actions/upload-artifact@master
+          with:
+            artifacts: "build/app/outputs/bundle/debug/*.aab"
 
   build_apk:
     name: Build Flutter (Android apk)
@@ -83,4 +88,27 @@ jobs:
         with:
           artifacts: "build/app/outputs/apk/debug/*.apk"
           token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
+
+  beta_apk:
+    name: Build Flutter (Android Beta apk)
+    needs: [flutter_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+          flutter-version: '2.0.5'
+      - run: flutter pub get
+      - run: flutter clean
+      - run: flutter build apk
+      - uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{secrets.FIREBASE_APP_ID}}
+          token: ${{secrets.FIREBASE_TOKEN}}
+          groups: Tester
+          file: "build/app/outputs/apk/debug/*.apk"
 
