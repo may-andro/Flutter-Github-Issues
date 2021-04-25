@@ -62,7 +62,7 @@ jobs:
           java-version: "12.x"
       - name: Download Artifact
         uses: actions/download-artifact@master
-          with:
+        with:
             name: debug
       - name: Upload App Bundle
         uses: wzieba/Firebase-Distribution-Github-Action@v1.0.0
