@@ -6,37 +6,58 @@ on:
   push:
     tags:
       - v*
-name: Continious Delivery Release APK
+name: CI
 jobs:
-  build:
-    name: Build apk
-    # This job will run on ubuntu virtual machine
+  flutter_test:
+    name: Run flutter test and analyze
     runs-on: ubuntu-latest
-
     steps:
-      # Setup Java environment in order to build the Android app.
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
-          java-version: '12.x'
-      # Setup the flutter environment.
+          java-version: "12.x"
       - uses: subosito/flutter-action@v1
         with:
           channel: 'stable'
           flutter-version: '2.0.5'
-      # Get flutter dependencies.
       - run: flutter pub get
-      # Statically analyze the Dart code for any errors.
-      - run: flutter analyze .
-      # Run widget tests for our flutter project.
+      - run: flutter analyze
 
-      # Build apk.
-      - run: flutter build apk
-      # Upload generated apk to the artifacts.
-      - name: Release apk
-        uses: ncipollo/release-action@v1
+  build_ios:
+    name: Build Flutter (iOS)
+    needs: [flutter_test]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
         with:
-          artifact: build/app/outputs/apk/release/*.apk
-          toekn: ${{secrets.FLUTTER_GITHUB_ISSUES}}
-        
-        
+          java-version: "12.x"
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+          flutter-version: '2.0.5'
+      - run: flutter pub get
+      - run: flutter clean
+      - run: flutter build ios --release --no-codesign
+
+  build_appbundle:
+    name: Build Flutter (Android)
+    needs: [flutter_test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: "stable"
+          flutter-version: '2.0.5'
+      - run: flutter pub get
+      - run: flutter clean
+      - run: flutter build appbundle
+      - name: Release apk
+          uses: ncipollo/release-action@v1
+          with:
+            artifacts: build/app/outputs/apk/release/*.apk
+            token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
