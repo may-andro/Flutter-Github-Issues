@@ -224,7 +224,6 @@ class _IssuesPageState extends State<IssuesPage> {
         Navigator.of(context).pop();
       },
     );
-    ;
   }
 }
 
