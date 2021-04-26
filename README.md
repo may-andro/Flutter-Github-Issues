@@ -80,3 +80,8 @@ beta_apk:
 
 App uses the clean architecture with bloc pattern and redux for state management.
 
+https://user-images.githubusercontent.com/16761273/116142527-4bd0f980-a6da-11eb-9b5b-69256ffdeb46.png
+https://user-images.githubusercontent.com/16761273/116142539-4e335380-a6da-11eb-88f5-49dd5255ef34.png
+https://user-images.githubusercontent.com/16761273/116142548-4f648080-a6da-11eb-85c7-8e2c4f5a0d82.png
+https://user-images.githubusercontent.com/16761273/116142549-4ffd1700-a6da-11eb-8f8b-c12ce13c50aa.png
+
