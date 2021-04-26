@@ -19,23 +19,19 @@ class IssuesPage extends StatefulWidget {
   _IssuesPageState createState() => _IssuesPageState();
 }
 
-class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
+class _IssuesPageState extends State<IssuesPage> {
   IssuesBloc _bloc;
-  AnimationController animationController;
 
   @override
   void initState() {
     super.initState();
-    animationController = new AnimationController(duration: const Duration(milliseconds: 1000), vsync: this);
-    animationController.forward();
     _bloc = getIt<IssuesBloc>();
-    _bloc.issueTypeStream.listen(_refreshList);
-    _bloc.issueTypeSink.add(false);
+    _bloc.issueStateStream.listen(_refreshList);
+    _bloc.issueStateSink.add(true);
   }
 
   @override
   void dispose() {
-    animationController.dispose();
     _bloc.dispose();
     super.dispose();
   }
@@ -73,13 +69,7 @@ class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
           ),
           body: BaseSliverHeader(
             headerHeight: MediaQuery.of(context).size.height * 0.1,
-            headerWidget: TitleBar(
-              label: ISSUE_TITLE,
-              rightIconData: Icons.filter_alt,
-              rightIconDataClick: () {
-                _showFilterDialog();
-              },
-            ),
+            headerWidget: _buildHeader(),
             bodyWidget: _buildBody(),
           ),
         ),
@@ -87,17 +77,32 @@ class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
     );
   }
 
-  _buildBody() {
-    return AnimatedBuilder(
-        animation: animationController,
-        builder: (BuildContext context, Widget child) {
-          return SafeArea(
-            child: Container(
-              color: Colors.white,
-              child: _buildUIState(),
-            ),
+  //UI Setters and building Methods
+  _buildHeader() {
+    return StreamBuilder<List<IssueItem>>(
+        stream: _bloc.allIssuesStream,
+        builder: (context, snapshot) {
+          return TitleBar(
+            label: ISSUE_TITLE,
+            rightIconData: Icons.filter_alt,
+            rightIconDataClick: () {
+              _showFilterDialog();
+            },
+            rightIconData2: _bloc.sortOrderIsLatest ? Icons.north_rounded : Icons.south_rounded,
+            rightIconDataClick2: () {
+              _showSortDialog();
+            },
           );
         });
+  }
+
+  _buildBody() {
+    return SafeArea(
+      child: Container(
+        color: Colors.white,
+        child: _buildUIState(),
+      ),
+    );
   }
 
   _buildUIState() {
@@ -105,7 +110,7 @@ class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
       stream: _bloc.allIssuesStream,
       builder: (context, AsyncSnapshot<List<IssueItem>> snapshot) {
         if (snapshot.hasData) {
-          return _buildSuccessState(snapshot);
+          return _buildSuccessState(snapshot.data);
         } else if (snapshot.hasError) {
           return _buildErrorState(snapshot);
         }
@@ -118,8 +123,11 @@ class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
     return Center(child: CircularProgressIndicator());
   }
 
-  _buildSuccessState(AsyncSnapshot<List<IssueItem>> snapshot) {
-    return Stack(fit: StackFit.expand, children: <Widget>[_buildTimeline(), _buildIssueList(snapshot)]);
+  _buildSuccessState(List<IssueItem> list) {
+    return Stack(fit: StackFit.expand, children: <Widget>[
+      _buildTimeline(),
+      _buildIssueList(list),
+    ]);
   }
 
   _buildTimeline() {
@@ -134,39 +142,31 @@ class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
     );
   }
 
-  _buildIssueList(AsyncSnapshot<List<IssueItem>> snapshot) {
-    return NotificationListener<OverscrollIndicatorNotification>(
-      onNotification: (overscroll) {
-        overscroll.disallowGlow();
-        return true;
-      },
-      child: ListView.builder(
-          itemCount: snapshot.data.length,
-          itemBuilder: (BuildContext context, int index) {
-            return _CardItem(issueItem: snapshot.data[index]);
-          }),
-    );
+  _buildIssueList(List<IssueItem> list) {
+    return StreamBuilder<List<int>>(
+        stream: _bloc.selectedIssuesStream,
+        builder: (context, selectedListSnapshot) {
+          var selectedList = selectedListSnapshot.hasData ? selectedListSnapshot.data : _bloc.selectedIssueList;
+          return NotificationListener<OverscrollIndicatorNotification>(
+            onNotification: (overscroll) {
+              overscroll.disallowGlow();
+              return true;
+            },
+            child: ListView.builder(
+                itemCount: list.length,
+                itemBuilder: (BuildContext context, int index) {
+                  IssueItem item = list[index];
+                  return _CardItem(issueItem: item, isSelected: selectedList.contains(item.id));
+                }),
+          );
+        });
   }
 
   _buildErrorState(AsyncSnapshot<List<IssueItem>> snapshot) {
     return Center(child: Text(snapshot.error.toString()));
   }
 
-  _buildFilterOptions() {
-    return StreamBuilder<bool>(
-        stream: _bloc.issueTypeStream,
-        builder: (context, snapshot) {
-          bool filterType = snapshot.hasData ? snapshot.data : true;
-          return _FilterList(
-            isOpen: filterType,
-            doOnSelection: (bool) {
-              _bloc.issueTypeSink.add(bool);
-              Navigator.of(context).pop();
-            },
-          );
-        });
-  }
-
+  //Dialogs
   Future<bool> _showFilterDialog() {
     return showDialog(
         context: context,
@@ -183,13 +183,83 @@ class _IssuesPageState extends State<IssuesPage> with TickerProviderStateMixin {
           );
         });
   }
+
+  _buildFilterOptions() {
+    return StreamBuilder<bool>(
+        stream: _bloc.issueStateStream,
+        builder: (context, snapshot) {
+          bool filterType = snapshot.hasData ? snapshot.data : _bloc.selectedState;
+          return _FilterList(
+            isOpen: filterType,
+            doOnSelection: (bool) {
+              _bloc.issueStateSink.add(bool);
+              Navigator.of(context).pop();
+            },
+          );
+        });
+  }
+
+  Future<bool> _showSortDialog() {
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+            child: DialogContent(
+              title: "Sort Issues",
+              child: _buildSortOptions(),
+              positiveText: "",
+              negativeText: "",
+            ),
+          );
+        });
+  }
+
+  _buildSortOptions() {
+    return _SortList(
+      isLatest: _bloc.sortOrderIsLatest,
+      doOnSelection: (bool) {
+        _bloc.setSortOrder(bool);
+        Navigator.of(context).pop();
+      },
+    );
+    ;
+  }
+}
+
+class _SortList extends StatelessWidget {
+  final bool isLatest;
+  final ValueChanged<bool> doOnSelection;
+
+  const _SortList({@required this.isLatest, @required this.doOnSelection});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        RadioListTile<bool>(
+          title: const Text('Latest Issue First'),
+          value: true,
+          groupValue: isLatest,
+          onChanged: (value) => doOnSelection(value),
+        ),
+        RadioListTile<bool>(
+          title: const Text('Oldest Issue First'),
+          value: false,
+          groupValue: isLatest,
+          onChanged: (value) => doOnSelection(value),
+        ),
+      ],
+    );
+  }
 }
 
 class _FilterList extends StatelessWidget {
   final bool isOpen;
   final ValueChanged<bool> doOnSelection;
 
-  _FilterList({@required this.isOpen, @required this.doOnSelection});
+  const _FilterList({@required this.isOpen, @required this.doOnSelection});
 
   @override
   Widget build(BuildContext context) {
@@ -215,27 +285,41 @@ class _FilterList extends StatelessWidget {
 class _CardItem extends StatelessWidget {
   final double dotSize = 12.0;
   final IssueItem issueItem;
+  final bool isSelected;
 
-  _CardItem({@required this.issueItem});
+  _CardItem({@required this.issueItem, this.isSelected});
+
+  _goToNextScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => IssuesDetailPage(issueItem: issueItem),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => IssuesDetailPage(issueItem: issueItem),
-          ),
-        );
+        IssuesBlocProvider.of(context).setSelected(issueItem.id);
+        _goToNextScreen(context);
       },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          _buildDot(MediaQuery.of(context).size.shortestSide, Theme.of(context).primaryColor),
-          _buildData(MediaQuery.of(context).size.shortestSide)
-        ],
+      child: Container(
+        color: isSelected ? Colors.grey[100] : Colors.transparent,
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              _buildDot(MediaQuery.of(context).size.shortestSide,
+                  isSelected ? Colors.grey[900] : Theme.of(context).primaryColor),
+              _buildData(MediaQuery.of(context).size.shortestSide)
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -254,7 +338,6 @@ class _CardItem extends StatelessWidget {
             issueItem.createdAt,
             style: TextStyle(fontSize: size * 0.03, color: Colors.grey),
           ),
-          SizedBox(height: 8),
         ],
       ),
     );

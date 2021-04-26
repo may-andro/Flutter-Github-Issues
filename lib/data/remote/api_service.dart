@@ -5,16 +5,14 @@ import 'dart:convert';
 
 class ApiService {
   Future<List<IssueItem>> fetchIssues(bool isOpen) async {
-    var url = Uri.https('api.github.com', '/repos/flutter/flutter/issues', {'is:': '${isOpen ? 'open': 'closed'}'});
-
+  	String state = '${isOpen ? 'open': 'closed'}';
+    Map<String, String> queryParams = {'state': state};
+    var url = Uri.https('api.github.com', '/repos/flutter/flutter/issues', queryParams);
     final response = await http.get(url);
-
-    print('url $url');
-
     if (response.statusCode == 200) {
       return parseIssues(response.body);
     } else {
-	    print('Exception Occured');
+	    print('Exception Occurred');
       throw Exception('Failed to load issues');
     }
   }

@@ -11,6 +11,9 @@ class TitleBar extends StatelessWidget {
   final IconData rightIconData;
   final Function rightIconDataClick;
 
+  final IconData rightIconData2;
+  final Function rightIconDataClick2;
+
   TitleBar({
     @required this.label,
     this.titleColor,
@@ -18,6 +21,8 @@ class TitleBar extends StatelessWidget {
     this.leftIconDataClick,
     this.rightIconData,
     this.rightIconDataClick,
+    this.rightIconData2,
+    this.rightIconDataClick2,
   });
 
   @override
@@ -72,6 +77,23 @@ class TitleBar extends StatelessWidget {
                 color: Theme.of(context).primaryColorDark,
               ),
               onPressed: rightIconDataClick != null ? rightIconDataClick : () => Navigator.pop(context),
+              color: Color(getColorHexFromStr(titleColor != null ? titleColor : BLACK)),
+            ),
+          ),
+          Visibility(
+            visible: rightIconData2 != null,
+            child: SizedBox(
+              width: 8,
+            ),
+          ),
+          Visibility(
+            visible: rightIconData2 != null,
+            child: IconButton(
+              icon: Icon(
+                rightIconData2,
+                color: Theme.of(context).primaryColorDark,
+              ),
+              onPressed: rightIconDataClick2 != null ? rightIconDataClick2 : () => Navigator.pop(context),
               color: Color(getColorHexFromStr(titleColor != null ? titleColor : BLACK)),
             ),
           ),

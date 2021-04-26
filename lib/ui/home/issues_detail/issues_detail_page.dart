@@ -76,12 +76,12 @@ class _CardItem extends StatelessWidget {
   final String label;
   final String value;
 
-  _CardItem({@required this.label, @required this.value});
+  const _CardItem({@required this.label, @required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

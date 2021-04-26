@@ -5,7 +5,7 @@ class BaseSliverHeader extends StatelessWidget {
   final Widget headerWidget;
   final double headerHeight;
 
-  BaseSliverHeader({@required this.bodyWidget, @required this.headerWidget, @required this.headerHeight});
+  const BaseSliverHeader({@required this.bodyWidget, @required this.headerWidget, @required this.headerHeight});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class BaseSliverHeader extends StatelessWidget {
               backgroundColor: Colors.transparent,
               elevation: 0.0,
               floating: false,
-              iconTheme: IconThemeData(color: Colors.black),
+              iconTheme: const IconThemeData(color: Colors.black),
               pinned: false,
               brightness: Brightness.dark,
               automaticallyImplyLeading: false,
