@@ -5,7 +5,7 @@ A new Flutter application for Github action and Firebase app distribution demons
 ## Getting Started
 
 ### Here is the work flow for Github actions to upload apk as artifact with every git push:
-
+```
 build_apk:
     name: Build Android APK
     needs: [flutter_test]
@@ -28,9 +28,11 @@ build_apk:
         with:
           name: apk
           path: build/app/outputs/apk/release/app-release.apk
+```
 
 ### Here is the work flow for Github actions to upload apk as release with every git push:
 
+```
 release_apk:
     name: Build Android Release APK
     needs: [flutter_test]
@@ -51,9 +53,10 @@ release_apk:
         with:
           artifacts: "build/app/outputs/apk/release/*.apk"
           token: ${{secrets.FLUTTER_GITHUB_ISSUES}}
+```
 
 ### Here is the work flow for Github actions to upload beta apk for QA with every git push:
-
+```
 beta_apk:
     name: Build Android Beta APK
     needs: [build_apk]
@@ -74,7 +77,7 @@ beta_apk:
           token: ${{secrets.FIREBASE_TOKEN}}
           groups: Tester
           file: app-release.apk
-          
+ ```         
           
 ### Application Arch: 
 
